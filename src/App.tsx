@@ -43,7 +43,7 @@ export default function App() {
     }
 
     // Check if it's super admin code
-    if (adminCode.trim() === "SUPER2024ADMIN") {
+    if (adminCode.trim() === "SUPER2025ADMIN") {
       if (!showSecretInput) {
         setShowSecretInput(true);
         return;
@@ -61,7 +61,7 @@ export default function App() {
         secretCode: secretCode.trim() || undefined
       });
       
-      if (adminCode.trim() === "SUPER2024ADMIN") {
+      if (adminCode.trim() === "SUPER2025ADMIN") {
         toast.success("You are now a super admin! Refresh the page to see admin controls.");
       } else {
         toast.success("Admin request submitted! Please wait for approval from super admin.");
