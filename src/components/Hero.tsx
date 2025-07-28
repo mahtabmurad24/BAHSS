@@ -17,7 +17,7 @@ export function Hero() {
     {
       title: "Dedicated Faculty",
       subtitle: "Experienced teachers committed to student success",
-      image: "https://i.ibb.co/MkLLxW1h/Slide-04.jpg"
+      image: "https://i.ibb.co/cP8w8zF/Slide-05.jpg"
     }
   ];
 
