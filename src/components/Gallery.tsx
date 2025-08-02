@@ -17,7 +17,11 @@ export function Gallery() {
     { value: "campus", label: "Campus", icon: "🏫" },
     { value: "activities", label: "Activities", icon: "🎨" },
     { value: "achievements", label: "Achievements", icon: "🏆" },
-    { value: "sports", label: "Sports", icon: "⚽" }
+    { value: "sports", label: "Sports", icon: "⚽" },
+    { value: "facilities", label: "Facilities", icon: "🍽️" },
+    { value: "ceremonies", label: "Ceremonies", icon: "🎓" },
+    { value: "workshops", label: "Workshops", icon: "🔧" },
+    { value: "arts", label: "Arts", icon: "🎭" }
   ];
 
   if (!allGallery) {
@@ -81,7 +85,7 @@ export function Gallery() {
               key={item._id}
               className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 animate-fadeInUp image-zoom cursor-pointer"
               style={{ animationDelay: `${index * 0.1}s` }}
-              onClick={() => setSelectedImage(item.imageUrl)}
+              onClick={() => setSelectedImage(item.imageUrl || null)}
             >
               <div className="aspect-square overflow-hidden">
                 <img
