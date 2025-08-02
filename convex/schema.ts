@@ -1,15 +1,24 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-import { authTables } from "@convex-dev/auth/server";
 
-const applicationTables = {
+export default defineSchema({
+  admin: defineTable({
+    userId: v.string(),
+    role: v.union(v.literal("admin"), v.literal("super_admin")),
+    status: v.union(v.literal("pending"), v.literal("approved"), v.literal("rejected")),
+    createdAt: v.number(),
+    name: v.optional(v.string()),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_status", ["status"]),
+
   notices: defineTable({
     title: v.string(),
     content: v.string(),
     priority: v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
     isActive: v.boolean(),
     publishedAt: v.number(),
-    createdBy: v.id("users"),
+    createdBy: v.optional(v.string()),
   })
     .index("by_active", ["isActive"])
     .index("by_priority", ["priority"])
@@ -27,12 +36,13 @@ const applicationTables = {
     bio: v.optional(v.string()),
     isActive: v.boolean(),
     order: v.number(),
-    createdBy: v.id("users"),
+    createdBy: v.optional(v.string()),
     createdAt: v.number(),
   })
     .index("by_active", ["isActive"])
     .index("by_department", ["department"])
-    .index("by_order", ["order"]),
+    .index("by_order", ["order"])
+    .index("by_department_active", ["department", "isActive"]),
 
   gallery: defineTable({
     title: v.string(),
@@ -40,24 +50,22 @@ const applicationTables = {
     imageId: v.id("_storage"),
     category: v.string(),
     isVisible: v.boolean(),
-    uploadedBy: v.id("users"),
+    uploadedBy: v.optional(v.string()),
     uploadedAt: v.number(),
   })
     .index("by_visible", ["isVisible"])
     .index("by_category", ["category"])
-    .index("by_uploaded", ["uploadedAt"]),
+    .index("by_uploaded", ["uploadedAt"])
+    .index("by_category_visible", ["category", "isVisible"]),
 
-  admins: defineTable({
-    userId: v.id("users"),
-    role: v.union(v.literal("super_admin"), v.literal("admin")),
-    status: v.optional(v.union(v.literal("active"), v.literal("pending"), v.literal("suspended"))),
-    approvedBy: v.optional(v.id("users")),
-    permissions: v.optional(v.array(v.string())),
-    createdAt: v.number(),
-  })
-    .index("by_user", ["userId"])
-    .index("by_role", ["role"])
-    .index("by_status", ["status"]),
+  site_config: defineTable({
+    superAdminCode: v.optional(v.string()),
+    superAdmin: v.optional(v.string()),
+    pendingAdmins: v.optional(v.array(v.string())),
+    approvedAdmins: v.optional(v.array(v.string())),
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
+  }),
 
   contact: defineTable({
     firstName: v.string(),
@@ -70,35 +78,23 @@ const applicationTables = {
   })
     .index("by_submitted", ["submittedAt"]),
 
+  admin_code_attempts: defineTable({
+    code: v.string(),
+    failedAttempts: v.number(),
+    blockedUntil: v.optional(v.number()),
+  })
+    .index("by_code", ["code"]),
+
   chat: defineTable({
     name: v.string(),
     email: v.string(),
     message: v.string(),
-    reply: v.optional(v.string()),
     isRead: v.boolean(),
     isReplied: v.boolean(),
-    repliedBy: v.optional(v.id("users")),
-    repliedAt: v.optional(v.number()),
     submittedAt: v.number(),
+    reply: v.optional(v.string()),
+    repliedBy: v.optional(v.string()),
+    repliedAt: v.optional(v.number()),
   })
-    .index("by_submitted", ["submittedAt"])
-    .index("by_read", ["isRead"])
-    .index("by_replied", ["isReplied"]),
-
-  otpVerification: defineTable({
-    email: v.string(),
-    otp: v.string(),
-    userId: v.id("users"),
-    expiresAt: v.number(),
-    isUsed: v.boolean(),
-    createdAt: v.number(),
-  })
-    .index("by_email", ["email"])
-    .index("by_user", ["userId"])
-    .index("by_expires", ["expiresAt"]),
-};
-
-export default defineSchema({
-  ...authTables,
-  ...applicationTables,
+    .index("by_createdAt", ["submittedAt"]),
 });

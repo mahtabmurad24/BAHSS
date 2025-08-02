@@ -1,11 +1,10 @@
-import { Authenticated, Unauthenticated, useQuery, useMutation } from "convex/react";
-import { api } from "../convex/_generated/api";
-import { SignInForm } from "./SignInForm";
-import { SignOutButton } from "./SignOutButton";
+import { useState, useEffect, useCallback } from "react";
 import { Toaster, toast } from "sonner";
-import { useState, useEffect } from "react";
+import { useMutation } from "convex/react";
+import { api } from "../convex/_generated/api";
 import { SchoolWebsite } from "./components/SchoolWebsite";
 import { AdminPanel } from "./components/AdminPanel";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 export default function App() {
   const [showAdmin, setShowAdmin] = useState(false);
@@ -13,66 +12,82 @@ export default function App() {
   const [adminCode, setAdminCode] = useState("");
   const [secretCode, setSecretCode] = useState("");
   const [showSecretInput, setShowSecretInput] = useState(false);
-  
-  const isAdmin = useQuery(api.admin.isAdmin);
-  const loggedInUser = useQuery(api.auth.loggedInUser);
+  const [verifiedAdminCode, setVerifiedAdminCode] = useState<string | null>(null);
+
+  const grantSuperAdmin = useMutation(api.admin.grantSuperAdmin);
   const initializeSuperAdmin = useMutation(api.admin.initializeSuperAdmin);
 
-  // Listen for admin modal event from header
-  useEffect(() => {
-    const handleShowAdminModal = () => {
+  const handleShowAdminModal = useCallback((e: Event) => {
+    const detail = (e as CustomEvent).detail;
+    if (detail?.show) {
       setShowAdminCodeModal(true);
-    };
+    }
+  }, []);
 
-    const handleToggleAdminPanel = () => {
-      setShowAdmin(!showAdmin);
-    };
+  const handleCloseAdminPanel = useCallback(() => {
+    setShowAdmin(false);
+    setShowAdminCodeModal(false);
+    setVerifiedAdminCode(null);
+  }, []);
 
-    window.addEventListener('showAdminModal', handleShowAdminModal);
-    window.addEventListener('toggleAdminPanel', handleToggleAdminPanel);
+  useEffect(() => {
+    window.addEventListener("showAdminModal", handleShowAdminModal);
+    window.addEventListener("closeAdminPanel", handleCloseAdminPanel);
     return () => {
-      window.removeEventListener('showAdminModal', handleShowAdminModal);
-      window.removeEventListener('toggleAdminPanel', handleToggleAdminPanel);
+      window.removeEventListener("showAdminModal", handleShowAdminModal);
+      window.removeEventListener("closeAdminPanel", handleCloseAdminPanel);
     };
-  }, [showAdmin]);
+  }, [handleShowAdminModal, handleCloseAdminPanel]);
 
-  const handleInitializeAdmin = async () => {
+  const handleAdminCodeSubmit = async () => {
     if (!adminCode.trim()) {
       toast.error("Please enter the admin code");
       return;
     }
 
-    // Check if it's super admin code
-    if (adminCode.trim() === "SUPER2025ADMIN") {
-      if (!showSecretInput) {
+    try {
+      if (adminCode.trim() === "SUPER2025ADMIN" && !showSecretInput) {
         setShowSecretInput(true);
         return;
       }
-      
-      if (!secretCode.trim()) {
+
+      if (adminCode.trim() === "SUPER2025ADMIN" && !secretCode.trim()) {
         toast.error("Please enter the secret code");
         return;
       }
-    }
 
-    try {
-      await initializeSuperAdmin({ 
-        adminCode: adminCode.trim(),
-        secretCode: secretCode.trim() || undefined
-      });
-      
       if (adminCode.trim() === "SUPER2025ADMIN") {
-        toast.success("You are now a super admin! Refresh the page to see admin controls.");
+        const result = await initializeSuperAdmin({
+          adminCode: adminCode.trim(),
+          secretCode: secretCode.trim(),
+        });
+        if (result.success) {
+          toast.success("Super admin initialized successfully!");
+          setVerifiedAdminCode(adminCode.trim());
+          setShowAdmin(true);
+          setShowAdminCodeModal(false);
+          setAdminCode("");
+          setSecretCode("");
+          setShowSecretInput(false);
+        } else {
+          toast.error(result.message || "Failed to initialize super admin");
+        }
       } else {
-        toast.success("Admin request submitted! Please wait for approval from super admin.");
+        const result = await grantSuperAdmin({ code: adminCode.trim() });
+        if (result.isAdmin) {
+          toast.success("Access granted to admin panel!");
+          setVerifiedAdminCode(adminCode.trim());
+          setShowAdmin(true);
+          setShowAdminCodeModal(false);
+          setAdminCode("");
+          setSecretCode("");
+          setShowSecretInput(false);
+        } else {
+          toast.error("Invalid admin code");
+        }
       }
-      
-      setShowAdminCodeModal(false);
-      setAdminCode("");
-      setSecretCode("");
-      setShowSecretInput(false);
     } catch (error: any) {
-      toast.error(error.message || "Failed to process admin request");
+      toast.error(error.message || "Failed to process admin code");
     }
   };
 
@@ -84,122 +99,66 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <Toaster position="top-right" />
-      
-      <Authenticated>
-        {showAdmin && isAdmin ? (
-          <AdminPanel />
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <Toaster position="top-right" />
+        {showAdmin && verifiedAdminCode ? (
+          <AdminPanel adminCode={verifiedAdminCode} />
         ) : (
           <SchoolWebsite />
         )}
-      </Authenticated>
-
-      <Unauthenticated>
-        <SchoolWebsite />
-      </Unauthenticated>
-
-      {/* Admin Code Modal */}
-      {showAdminCodeModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-md w-full animate-scaleIn">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-800">
-                  {showSecretInput ? "Enter Secret Code" : "Enter Admin Code"}
-                </h2>
-                <button
-                  onClick={resetModal}
-                  className="text-gray-500 hover:text-gray-700 transition-colors"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <div className="p-6">
-              <div className="mb-4">
-                {showSecretInput ? (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                    <p className="text-blue-800 text-sm">
-                      🔐 Super Admin verification required. Enter the secret code to complete the process.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <p className="text-green-800 text-sm font-medium">Regular Admin Code:</p>
-                      <p className="text-green-700 text-sm">Use this to request admin access (requires approval)</p>
-                    </div>
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                      <p className="text-red-800 text-sm font-medium">Super Admin Code:</p>
-                      <p className="text-red-700 text-sm">Use this for immediate super admin access (requires secret code)</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
+        {showAdminCodeModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 sm:p-6 z-50 animate-fadeIn">
+            <div className="bg-white rounded-2xl w-full max-w-md p-6 sm:p-8 animate-scaleIn">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
+                Enter Admin Code
+              </h2>
               <div className="space-y-4">
-                {!showSecretInput ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Admin Code
+                  </label>
                   <input
                     type="password"
                     value={adminCode}
                     onChange={(e) => setAdminCode(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter admin code"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter") {
-                        handleInitializeAdmin();
-                      }
-                    }}
                   />
-                ) : (
-                  <input
-                    type="password"
-                    value={secretCode}
-                    onChange={(e) => setSecretCode(e.target.value)}
-                    placeholder="Enter secret code"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter") {
-                        handleInitializeAdmin();
-                      }
-                    }}
-                  />
+                </div>
+                {showSecretInput && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Secret Code
+                    </label>
+                    <input
+                      type="password"
+                      value={secretCode}
+                      onChange={(e) => setSecretCode(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Enter secret code"
+                    />
+                  </div>
                 )}
-                
-                <div className="flex space-x-3">
+                <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
                   <button
-                    onClick={handleInitializeAdmin}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
+                    onClick={handleAdminCodeSubmit}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors"
                   >
-                    {showSecretInput ? "Verify Secret Code" : "Verify Code"}
+                    Submit
                   </button>
                   <button
                     onClick={resetModal}
-                    className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-3 rounded-lg font-medium transition-colors"
+                    className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md font-medium transition-colors"
                   >
                     Cancel
                   </button>
                 </div>
-                
-                {showSecretInput && (
-                  <button
-                    onClick={() => {
-                      setShowSecretInput(false);
-                      setSecretCode("");
-                    }}
-                    className="w-full text-sm text-blue-600 hover:text-blue-800 transition-colors"
-                  >
-                    ← Back to admin code
-                  </button>
-                )}
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </ErrorBoundary>
   );
 }

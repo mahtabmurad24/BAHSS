@@ -1,8 +1,18 @@
-import { auth } from "./auth";
-import router from "./router";
+import { httpRouter } from "convex/server";
+import { httpAction } from "./_generated/server";
 
-const http = router;
+const http = httpRouter();
 
-auth.addHttpRoutes(http);
+// Health check route
+http.route({
+  path: "/health",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    return new Response(JSON.stringify({ status: "healthy" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
 
 export default http;

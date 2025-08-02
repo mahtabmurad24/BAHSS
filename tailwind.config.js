@@ -29,6 +29,9 @@ export default {
         'float': 'float 3s ease-in-out infinite',
         'float-delayed': 'float-delayed 3s ease-in-out infinite 1.5s',
       },
+      screens: {
+        'xs': '360px',
+      },
     },
   },
   plugins: [],

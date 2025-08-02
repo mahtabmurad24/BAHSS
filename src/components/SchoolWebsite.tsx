@@ -16,13 +16,15 @@ import { LiveChat } from "./LiveChat";
 export function SchoolWebsite() {
   const [activeSection, setActiveSection] = useState("home");
   const [showGoToTop, setShowGoToTop] = useState(false);
+  const notices = useQuery(api.notices.getPublicNotices, { limit: 10 });
+  const teachers = useQuery(api.teachers.getPublicTeachers, { limit: 20 });
+  const gallery = useQuery(api.gallery.getPublicGallery, { limit: 20 });
 
   useEffect(() => {
     const handleScroll = () => {
       const sections = ["home", "about", "academics", "teachers", "gallery", "notices", "contact", "developer"];
       const scrollPosition = window.scrollY + 100;
 
-      // Show/hide go to top button
       setShowGoToTop(window.scrollY > 300);
 
       for (const section of sections) {
@@ -30,7 +32,6 @@ export function SchoolWebsite() {
         if (element) {
           const offsetTop = element.offsetTop;
           const offsetHeight = element.offsetHeight;
-          
           if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
             setActiveSection(section);
             break;
@@ -46,13 +47,12 @@ export function SchoolWebsite() {
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: "smooth"
+      behavior: "smooth",
     });
   };
 
   return (
     <>
-      {/* SEO Meta Tags */}
       <div style={{ display: 'none' }}>
         <h1>Badda Alatunnesa Higher Secondary School & College - Best School in Dhaka Bangladesh</h1>
         <meta name="description" content="Badda Alatunnesa Higher Secondary School & College is a premier educational institution in Dhaka, Bangladesh offering quality education from primary to higher secondary level with experienced teachers and modern facilities." />
@@ -72,18 +72,32 @@ export function SchoolWebsite() {
           <Hero />
           <About />
           <Academics />
-          <Teachers />
-          <Gallery />
-          <Notices />
+          {teachers === undefined ? (
+            <div className="p-6 text-center">Loading teachers...</div>
+          ) : teachers === null ? (
+            <div className="p-6 text-center text-red-600">Failed to load teachers</div>
+          ) : (
+            <Teachers />
+          )}
+          {gallery === undefined ? (
+            <div className="p-6 text-center">Loading gallery...</div>
+          ) : gallery === null ? (
+            <div className="p-6 text-center text-red-600">Failed to load gallery</div>
+          ) : (
+            <Gallery />
+          )}
+          {notices === undefined ? (
+            <div className="p-6 text-center">Loading notices...</div>
+          ) : notices === null ? (
+            <div className="p-6 text-center text-red-600">Failed to load notices</div>
+          ) : (
+            <Notices />
+          )}
           <Contact />
           <Developer />
         </main>
         <Footer />
-        
-        {/* Live Chat */}
         <LiveChat />
-        
-        {/* Go to Top Button */}
         {showGoToTop && (
           <button
             onClick={scrollToTop}

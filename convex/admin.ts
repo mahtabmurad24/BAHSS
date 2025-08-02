@@ -1,205 +1,229 @@
-import { query, mutation, action } from "./_generated/server";
 import { v } from "convex/values";
-import { getAuthUserId } from "@convex-dev/auth/server";
-
-const SUPER_ADMIN_CODE = "SUPER2025ADMIN";
-const ADMIN_CODE = "ADMIN2025";
-const SUPER_ADMIN_SECRET = "BAHSSC2025SECRET";
+import { query, mutation } from "./_generated/server";
+import { v4 as uuidv4 } from "uuid";
 
 export const isAdmin = query({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return false;
-
+  args: { adminId: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    if (!args.adminId) return { isAdmin: false, role: null };
     const admin = await ctx.db
-      .query("admins")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .query("admin")
+      .filter((q) => q.eq(q.field("userId"), args.adminId))
       .first();
-
-    return admin && (admin.status === "active" || !admin.status);
+    return admin ? { isAdmin: admin.status === "approved", role: admin.role } : { isAdmin: false, role: null };
   },
 });
 
-export const getAdminInfo = query({
-  args: {},
+export const getConfig = query({
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return null;
-
-    const admin = await ctx.db
-      .query("admins")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
-
-    if (!admin || (admin.status && admin.status !== "active")) return null;
-
-    const user = await ctx.db.get(userId);
-    return {
-      admin,
-      user,
-      role: admin.role,
-    };
+    return await ctx.db.query("site_config").first();
   },
 });
 
 export const initializeSuperAdmin = mutation({
-  args: { 
+  args: {
     adminCode: v.string(),
     secretCode: v.optional(v.string()),
-    otp: v.optional(v.string())
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Must be logged in");
+    const config = await ctx.db.query("site_config").first();
+    
+    if (config?.superAdmin) {
+      const existingAdmin = await ctx.db
+        .query("admin")
+        .filter((q) => q.eq(q.field("userId"), config.superAdmin))
+        .first();
+      
+      return { 
+        success: true,
+        message: "Super admin already exists",
+        adminId: config.superAdmin,
+        role: existingAdmin?.role || "super_admin"
+      };
     }
 
-    // Check if user is already an admin
-    const existingAdmin = await ctx.db
-      .query("admins")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
-
-    if (existingAdmin) {
-      throw new Error("User is already an admin");
-    }
-
-    if (args.adminCode === SUPER_ADMIN_CODE) {
-      // Super admin verification
-      if (!args.secretCode || args.secretCode !== SUPER_ADMIN_SECRET) {
-        throw new Error("Invalid secret code for super admin");
+    if (args.adminCode === "SUPER2025ADMIN") {
+      if (!args.secretCode) {
+        throw new Error("Secret code required for super admin initialization");
+      }
+      if (args.secretCode !== "BAHSSC2025SECRET") {
+        throw new Error("Invalid secret code");
       }
 
-      await ctx.db.insert("admins", {
-        userId,
+      const adminId = uuidv4();
+      await ctx.db.insert("site_config", {
+        superAdminCode: args.adminCode,
+        superAdmin: adminId,
+        pendingAdmins: [],
+        approvedAdmins: [adminId],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+      await ctx.db.insert("admin", {
+        userId: adminId,
         role: "super_admin",
-        status: "active",
+        status: "approved",
         createdAt: Date.now(),
+        name: "System Super Admin",
       });
-    } else if (args.adminCode === ADMIN_CODE) {
-      // Regular admin - needs approval
-      await ctx.db.insert("admins", {
-        userId,
-        role: "admin",
-        status: "pending",
-        createdAt: Date.now(),
-      });
-      
-      throw new Error("Admin request submitted. Please wait for super admin approval.");
-    } else {
-      throw new Error("Invalid admin code");
+
+      return { 
+        success: true, 
+        message: "Super admin initialized successfully", 
+        adminId 
+      };
     }
+
+    throw new Error("Invalid admin code provided");
+  },
+});
+
+export const grantSuperAdmin = mutation({
+  args: { code: v.string() },
+  handler: async (ctx, args) => {
+    const config = await ctx.db.query("site_config").first();
+    if (!config || config.superAdminCode !== args.code) {
+      throw new Error("Invalid super admin code");
+    }
+
+    const adminId = uuidv4();
+    await ctx.db.insert("admin", {
+      userId: adminId,
+      role: "admin",
+      status: "approved",
+      createdAt: Date.now(),
+      name: undefined,
+    });
+
+    return { 
+      isAdmin: true, 
+      role: "admin",
+      adminId
+    };
+  },
+});
+
+export const getAdminInfo = query({
+  args: { adminId: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    if (!args.adminId) return null;
+    const admin = await ctx.db
+      .query("admin")
+      .filter((q) => q.eq(q.field("userId"), args.adminId))
+      .first();
+    if (!admin) return null;
+    return {
+      _id: admin._id,
+      userId: admin.userId,
+      role: admin.role,
+      status: admin.status || "pending",
+      createdAt: admin.createdAt,
+      name: admin.name,
+    };
   },
 });
 
 export const getPendingAdmins = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return [];
-
-    const admin = await ctx.db
-      .query("admins")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
-
-    if (!admin || admin.role !== "super_admin" || (admin.status && admin.status !== "active")) {
-      return [];
-    }
-
-    const pendingAdmins = await ctx.db
-      .query("admins")
-      .withIndex("by_status", (q) => q.eq("status", "pending"))
+    return await ctx.db
+      .query("admin")
+      .filter((q) => q.eq(q.field("status"), "pending"))
       .collect();
-
-    return Promise.all(
-      pendingAdmins.map(async (admin) => ({
-        ...admin,
-        user: await ctx.db.get(admin.userId),
-      }))
-    );
   },
 });
 
 export const getAllAdmins = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return [];
-
-    const admin = await ctx.db
-      .query("admins")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
-
-    if (!admin || admin.role !== "super_admin" || (admin.status && admin.status !== "active")) {
-      return [];
-    }
-
-    const allAdmins = await ctx.db
-      .query("admins")
+    return await ctx.db
+      .query("admin")
+      .filter((q) => q.eq(q.field("status"), "approved"))
       .collect();
-
-    return Promise.all(
-      allAdmins.map(async (admin) => ({
-        ...admin,
-        user: await ctx.db.get(admin.userId),
-      }))
-    );
   },
 });
 
 export const approveAdmin = mutation({
-  args: { adminId: v.id("admins") },
+  args: { userId: v.string() },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Unauthorized");
-    }
-
-    const superAdmin = await ctx.db
-      .query("admins")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
+    const config = await ctx.db.query("site_config").first();
+    if (!config) throw new Error("Site configuration not found");
+    const admin = await ctx.db
+      .query("admin")
+      .filter((q) => q.eq(q.field("userId"), args.userId))
       .first();
-
-    if (!superAdmin || superAdmin.role !== "super_admin" || (superAdmin.status && superAdmin.status !== "active")) {
-      throw new Error("Super admin access required");
+    if (!admin || admin.status !== "pending") {
+      throw new Error("User not found in pending admins list");
     }
-
-    await ctx.db.patch(args.adminId, {
-      status: "active",
-      approvedBy: userId,
+    await ctx.db.patch(admin._id, {
+      status: "approved",
     });
+    await ctx.db.patch(config._id, {
+      pendingAdmins: config.pendingAdmins?.filter((id) => id !== args.userId) || [],
+      approvedAdmins: [...(config.approvedAdmins || []), args.userId],
+      updatedAt: Date.now(),
+    });
+    return { success: true, message: "Admin approved successfully" };
   },
 });
 
 export const removeAdmin = mutation({
-  args: { adminId: v.id("admins") },
+  args: { userId: v.string() },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Unauthorized");
-    }
-
-    const superAdmin = await ctx.db
-      .query("admins")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
+    const config = await ctx.db.query("site_config").first();
+    if (!config) throw new Error("Site configuration not found");
+    const admin = await ctx.db
+      .query("admin")
+      .filter((q) => q.eq(q.field("userId"), args.userId))
       .first();
-
-    if (!superAdmin || superAdmin.role !== "super_admin" || (superAdmin.status && superAdmin.status !== "active")) {
-      throw new Error("Super admin access required");
+    if (!admin) throw new Error("Admin not found");
+    if (args.userId === config.superAdmin) {
+      throw new Error("Cannot remove super admin");
     }
+    await ctx.db.patch(admin._id, {
+      status: "rejected",
+    });
+    await ctx.db.patch(config._id, {
+      pendingAdmins: config.pendingAdmins?.filter((id) => id !== args.userId) || [],
+      approvedAdmins: config.approvedAdmins?.filter((id) => id !== args.userId) || [],
+      updatedAt: Date.now(),
+    });
+    return { success: true, message: "Admin removed successfully" };
+  },
+});
 
-    const adminToRemove = await ctx.db.get(args.adminId);
-    if (!adminToRemove) {
-      throw new Error("Admin not found");
+export const changeAdminRole = mutation({
+  args: {
+    userId: v.string(),
+    newRole: v.union(v.literal("admin"), v.literal("super_admin")),
+  },
+  handler: async (ctx, args) => {
+    const config = await ctx.db.query("site_config").first();
+    if (!config) throw new Error("Site configuration not found");
+    const admin = await ctx.db
+      .query("admin")
+      .filter((q) => q.eq(q.field("userId"), args.userId))
+      .first();
+    if (!admin) throw new Error("Admin not found");
+    if (args.userId === config.superAdmin && args.newRole === "admin") {
+      throw new Error("Cannot demote super admin");
     }
-
-    if (adminToRemove.userId === userId) {
-      throw new Error("Cannot remove yourself");
+    await ctx.db.patch(admin._id, {
+      role: args.newRole,
+    });
+    if (args.newRole === "super_admin") {
+      await ctx.db.patch(config._id, {
+        superAdmin: args.userId,
+        approvedAdmins: config.approvedAdmins?.filter((id) => id !== args.userId) || [],
+        updatedAt: Date.now(),
+      });
+    } else {
+      await ctx.db.patch(config._id, {
+        approvedAdmins: [...(config.approvedAdmins?.filter((id) => id !== args.userId) || []), args.userId],
+        superAdmin: config.superAdmin === args.userId ? undefined : config.superAdmin,
+        updatedAt: Date.now(),
+      });
     }
-
-    await ctx.db.delete(args.adminId);
+    return { success: true, message: `Admin role changed to ${args.newRole} successfully` };
   },
 });
