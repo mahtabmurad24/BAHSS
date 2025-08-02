@@ -26,6 +26,7 @@ export function Header({ activeSection }: HeaderProps) {
     { id: "gallery", label: "Gallery" },
     { id: "notices", label: "Notices" },
     { id: "contact", label: "Contact" },
+    { id: "developer", label: "Principal's Speech" },
   ];
 
   const scrollToSection = (sectionId: string) => {
@@ -38,12 +39,14 @@ export function Header({ activeSection }: HeaderProps) {
 
   return (
     <>
+      {/* EIIN area removed as per user request */}
       <header
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
           isScrolled
             ? "bg-white/95 backdrop-blur-md shadow-lg"
             : "bg-transparent"
         }`}
+        style={{ top: "0" }}
       >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-20">
@@ -70,6 +73,13 @@ export function Header({ activeSection }: HeaderProps) {
                   }`}
                 >
                   Higher Secondary School & College
+                </p>
+                <p
+                  className={`text-xs transition-colors duration-300 ${
+                    isScrolled ? "text-gray-500" : "text-gray-300"
+                  }`}
+                >
+                  <strong>EIIN: 107841</strong>
                 </p>
               </div>
             </div>

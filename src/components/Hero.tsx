@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { FindOnlineResultButton } from "./FindOnlineResultButton";
 
 export function Hero() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -99,6 +100,9 @@ export function Hero() {
         <div className="absolute top-1/3 right-1/4 w-3 h-3 bg-purple-400 rounded-full animate-float-delayed" />
         <div className="absolute bottom-1/4 left-1/3 w-2 h-2 bg-pink-400 rounded-full animate-float" />
       </div>
+
+      {/* Find Online Result Button */}
+      <FindOnlineResultButton />
     </section>
   );
 }

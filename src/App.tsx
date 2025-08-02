@@ -17,24 +17,40 @@ export default function App() {
   const grantSuperAdmin = useMutation(api.admin.grantSuperAdmin);
   const initializeSuperAdmin = useMutation(api.admin.initializeSuperAdmin);
 
-  const handleShowAdminModal = useCallback((e: Event) => {
-    const detail = (e as CustomEvent).detail;
-    if (detail?.show) {
+  const handleShowAdminModal = useCallback(() => {
+    // If we already have a verified admin code, show the admin panel directly
+    if (verifiedAdminCode) {
+      setShowAdmin(true);
+    } else {
+      // Otherwise, show the admin code modal
       setShowAdminCodeModal(true);
     }
-  }, []);
+  }, [verifiedAdminCode]);
 
   const handleCloseAdminPanel = useCallback(() => {
     setShowAdmin(false);
     setShowAdminCodeModal(false);
     setVerifiedAdminCode(null);
+    // Keep the admin code in localStorage when closing admin panel
+    // It will only be removed when explicitly logging out
   }, []);
 
   useEffect(() => {
-    window.addEventListener("showAdminModal", handleShowAdminModal);
+    // Check for saved admin code on app initialization
+    const savedAdminCode = localStorage.getItem("adminCode");
+    if (savedAdminCode) {
+      setVerifiedAdminCode(savedAdminCode);
+      // Don't automatically show admin panel on page load, only set the verified code
+    }
+
+    const handleShowAdminModalEvent = () => {
+      handleShowAdminModal();
+    };
+
+    window.addEventListener("showAdminModal", handleShowAdminModalEvent);
     window.addEventListener("closeAdminPanel", handleCloseAdminPanel);
     return () => {
-      window.removeEventListener("showAdminModal", handleShowAdminModal);
+      window.removeEventListener("showAdminModal", handleShowAdminModalEvent);
       window.removeEventListener("closeAdminPanel", handleCloseAdminPanel);
     };
   }, [handleShowAdminModal, handleCloseAdminPanel]);
@@ -69,6 +85,8 @@ export default function App() {
           setAdminCode("");
           setSecretCode("");
           setShowSecretInput(false);
+          // Save admin code to localStorage
+          localStorage.setItem("adminCode", adminCode.trim());
         } else {
           toast.error(result.message || "Failed to initialize super admin");
         }
@@ -82,6 +100,8 @@ export default function App() {
           setAdminCode("");
           setSecretCode("");
           setShowSecretInput(false);
+          // Save admin code to localStorage
+          localStorage.setItem("adminCode", adminCode.trim());
         } else {
           toast.error("Invalid admin code");
         }
@@ -100,7 +120,7 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
         <Toaster position="top-right" />
         {showAdmin && verifiedAdminCode ? (
           <AdminPanel adminCode={verifiedAdminCode} />
