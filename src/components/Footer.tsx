@@ -23,8 +23,8 @@ export function Footer() {
   const contactInfo = [
     { icon: "📍", text: "Gulshan, Badda, Dhaka-1212, Bangladesh" },
     { icon: "📞", text: "9883066, 9895334, 8837393" },
-    { icon: "✉️", text: "info@baddaalatunnesa.edu.bd" },
-    { icon: "🌐", text: "https://bahss.netlify.app" },
+    { icon: "✉️", text: "baddaalatunnesa@yahoo.com" },
+    { icon: "🌐", text: "https://bahss.vercel.app" },
   ];
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
