@@ -561,14 +561,24 @@ export function AdminPanel({ adminCode }: { adminCode: string }) {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                    <input
-                      type="text"
+                    <select
                       value={teacherFormData.department}
                       onChange={(e) => setTeacherFormData({ ...teacherFormData, department: e.target.value })}
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       required
                       disabled={isLoading || isUploading}
-                    />
+                    >
+                      <option value="">Select Department</option>
+                      <option value="Science">Science</option>
+                      <option value="Arts">Arts</option>
+                      <option value="Commerce">Commerce</option>
+                      <option value="Mathematics">Mathematics</option>
+                      <option value="English">English</option>
+                      <option value="Bangla">Bangla</option>
+                      <option value="Religion">Religion</option>
+                      <option value="ICT">ICT</option>
+                      <option value="Physical Education">Physical Education</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Qualification</label>
@@ -764,14 +774,23 @@ export function AdminPanel({ adminCode }: { adminCode: string }) {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                    <input
-                      type="text"
+                    <select
                       value={galleryFormData.category}
                       onChange={(e) => setGalleryFormData({ ...galleryFormData, category: e.target.value })}
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       required
                       disabled={isLoading || isUploading}
-                    />
+                    >
+                      <option value="">Select Category</option>
+                      <option value="Events">Events</option>
+                      <option value="Activities">Activities</option>
+                      <option value="Achievements">Achievements</option>
+                      <option value="Facilities">Facilities</option>
+                      <option value="Ceremonies">Ceremonies</option>
+                      <option value="Workshops">Workshops</option>
+                      <option value="Sports">Sports</option>
+                      <option value="Arts">Arts</option>
+                    </select>
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
