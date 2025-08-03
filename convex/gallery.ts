@@ -8,12 +8,17 @@ export const getPublicGallery = query({
   },
   handler: async (ctx, args) => {
     const limit = args.limit || 20;
-    let query = ctx.db
-      .query("gallery")
-      .withIndex("by_visible", (q) => q.eq("isVisible", true));
-
+    let query;
+    
     if (args.category) {
-      query = query.filter((q) => q.eq(q.field("category"), args.category));
+      query = ctx.db
+        .query("gallery")
+        .withIndex("by_category_visible", (q) => 
+          q.eq("category", args.category!).eq("isVisible", true));
+    } else {
+      query = ctx.db
+        .query("gallery")
+        .withIndex("by_visible", (q) => q.eq("isVisible", true));
     }
 
     const gallery = await query.order("desc").take(limit);

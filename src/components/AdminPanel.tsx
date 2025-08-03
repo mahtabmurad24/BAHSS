@@ -782,14 +782,15 @@ export function AdminPanel({ adminCode }: { adminCode: string }) {
                       disabled={isLoading || isUploading}
                     >
                       <option value="">Select Category</option>
-                      <option value="Events">Events</option>
-                      <option value="Activities">Activities</option>
-                      <option value="Achievements">Achievements</option>
-                      <option value="Facilities">Facilities</option>
-                      <option value="Ceremonies">Ceremonies</option>
-                      <option value="Workshops">Workshops</option>
-                      <option value="Sports">Sports</option>
-                      <option value="Arts">Arts</option>
+                      <option value="events">Events</option>
+                      <option value="campus">Campus</option>
+                      <option value="activities">Activities</option>
+                      <option value="achievements">Achievements</option>
+                      <option value="sports">Sports</option>
+                      <option value="facilities">Facilities</option>
+                      <option value="ceremonies">Ceremonies</option>
+                      <option value="workshops">Workshops</option>
+                      <option value="arts">Arts</option>
                     </select>
                   </div>
                   <div className="md:col-span-2">
