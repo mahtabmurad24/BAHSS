@@ -17,21 +17,21 @@ export function Contact() {
       name: "Main Campus",
       address: "Alatunnesa School Rd, Dhaka 1212",
       phone: "9883066, 9895334, 8837393",
-      email: "main@baddaalatunnesa.edu.bd",
+      email: "baddaalatunnesa@yahoo.com",
       isMain: true,
     },
     {
       name: "Boy's Campus",
       address: "Kha 66/3, Alatunnesa School Rd, Dhaka 1212",
       phone: "9883066, 9895334, 8837393",
-      email: "Boys@baddaalatunnesa.edu.bd",
+      email: "baddaalatunnesa@yahoo.com",
       isMain: false,
     },
     {
       name: "Adarsha Nagar Campus",
       address: "Sekandarbagh, Adarsha Nagar, Dhaka-1212",
       phone: "9883066, 9895334, 8837393",
-      email: "adarshanagar@baddaalatunnesa.edu.bd",
+      email: "baddaalatunnesa@yahoo.com",
       isMain: false,
     },
   ];
@@ -45,7 +45,7 @@ export function Contact() {
     {
       icon: "🌐",
       title: "Website",
-      details: "www.bahss.netlify.app",
+      details: "www.bahss.vercel.app",
     },
   ];
 
