@@ -23,8 +23,8 @@ export function Footer() {
   const contactInfo = [
     { icon: "📍", text: "Gulshan, Badda, Dhaka-1212, Bangladesh" },
     { icon: "📞", text: "9883066, 9895334, 8837393" },
-    { icon: "✉️", text: "info@baddaalatunnesa.edu.bd" },
-    { icon: "🌐", text: "https://bahss.netlify.app" },
+    { icon: "✉️", text: "baddaalatunnesa@yahoo.com" },
+    { icon: "🌐", text: "https://bahss.vercel.app" },
   ];
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
@@ -202,7 +202,7 @@ export function Footer() {
           <div className="container mx-auto px-4 py-6">
             <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-center md:text-left">
               <div className="text-gray-300 text-sm animate-fadeInLeft">
-                © 2025 Badda Alatunnesa Higher Secondary School & College. All rights reserved.
+                © 2025 Badda Alatunnesa Higher Secondary School & College. All rights reserved. Powerded by <a href="https://www.facebook.com/mahtafgfx1" target="_blank" className="text-blue-300 hover:text-blue-400 transition-colors">Mahtaf Hossain</a>.
               </div>
               <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6 text-sm text-gray-300 animate-fadeInRight">
                 <a href="#" className="hover:text-blue-300 transition-colors">Privacy Policy</a>
