@@ -1,143 +1,70 @@
+import { useState } from "react";
+
 export function Developer() {
-  const developer = {
-    name: "Mahtaf Hossain",
-    title: "Graphics Designer",
-    description: "I’m a passionate graphics designer with a flair for creating visually stunning designs and a growing expertise in web development. I crafted this website for Badda Alatunnesa Higher Secondary School & College with creativity and dedication, blending aesthetics with functionality to showcase the institution’s excellence.",
-    image: "https://i.ibb.co/Fkswd0J9/My-Image.png",
-    skills: ["TypeScript", "Convex", "Tailwind CSS", "Node.js"],
-    contact: {
-      email: "info.mahtabmurad@gmail.com",
-      behance: "https://www.behance.net/mahtafgfx",
-      facebook: "https://www.facebook.com/mahtafgfx1",
-      portfolio: "https://mahtafgfx.netlify.app/"
-    }
+  const [language, setLanguage] = useState<"en" | "bn">("en");
+
+  const speeches = {
+    en: `Dear Students and Faculty,
+You are the future of our esteemed institution. Every challenge is a chance to grow stronger. Believe in yourself, stay focused, and work hard. Together, let’s build a legacy of excellence with courage and determination.
+Thank you.`,
+    bn: `প্রিয় ছাত্র-ছাত্রী ও শিক্ষকবৃন্দ,
+আপনারাই আমাদের সম্মানিত প্রতিষ্ঠানের ভবিষ্যৎ। প্রতিটি চ্যালেঞ্জ আপনাকে আরও শক্তিশালী করার সুযোগ। নিজের উপর ভরসা রাখুন, লক্ষ্যে অটল থাকুন এবং অক্লান্ত পরিশ্রম করুন। আসুন, সাহস ও দৃঢ়তার সাথে শ্রেষ্ঠত্বের উত্তরাধিকার গড়ি।
+ধন্যবাদ।`
+  };
+
+  // Placeholder image URL for the man who set up the school
+  const principalImage = "https://i.ibb.co/27MMDxnK/Principal.jpg";
+
+  const toggleLanguage = () => {
+    setLanguage((prev) => (prev === "en" ? "bn" : "en"));
   };
 
   return (
-    <section id="developer" className="py-10 xs:py-12 sm:py-20 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white">
+    <section
+      id="developer"
+      className="py-10 xs:py-12 sm:py-20 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white"
+    >
       <div className="container mx-auto px-3 xs:px-4 sm:px-6">
         {/* Section Header */}
         <div className="text-center mb-10 xs:mb-12 sm:mb-16 animate-fadeInUp">
           <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-bold mb-4 xs:mb-6">
-            Meet The <span className="text-pink-400">Developer</span>
+            Principal&apos;s <span className="text-pink-400">Speech</span>
           </h2>
           <p className="text-base xs:text-lg sm:text-xl text-indigo-100 max-w-3xl mx-auto">
-            Behind every great website is a passionate developer who brings ideas to life.
+            {language === "en"
+              ? "A message of inspiration and encouragement to our students and faculty."
+              : "আমাদের ছাত্র-ছাত্রী ও শিক্ষকবৃন্দের জন্য অনুপ্রেরণা ও উৎসাহের বার্তা।"}
           </p>
         </div>
 
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white/10 backdrop-blur-md rounded-3xl p-4 xs:p-6 sm:p-8 md:p-12 shadow-2xl animate-fadeInUp">
-            <div className="grid xs:grid-cols-2 gap-6 xs:gap-8 sm:gap-12">
-              {/* Developer Image */}
-              <div className="text-center xs:text-left">
+          <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 sm:p-8 md:p-12 shadow-2xl animate-fadeInUp">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+              {/* Principal Image */}
+              <div className="text-center sm:text-left">
                 <div className="relative inline-block">
-                  <div className="w-40 xs:w-48 sm:w-64 h-40 xs:h-48 sm:h-64 mx-auto xs:mx-0 rounded-full overflow-hidden shadow-2xl ring-4 ring-pink-400/30">
+                  <div className="w-24 sm:w-48 md:w-64 h-24 sm:h-48 md:h-64 mx-auto sm:mx-0 rounded-full overflow-hidden shadow-2xl ring-4 ring-pink-400/30">
                     <img
-                      src={developer.image}
-                      alt={developer.name}
+                      src={principalImage}
+                      alt="School Founder"
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <div className="absolute -bottom-3 xs:-bottom-4 -right-3 xs:-right-4 w-10 xs:w-12 sm:w-16 h-10 xs:h-12 sm:h-16 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg">
-                    <span className="text-lg xs:text-xl sm:text-2xl">💻</span>
-                  </div>
                 </div>
               </div>
 
-              {/* Developer Info */}
-              <div className="space-y-4 xs:space-y-5 sm:space-y-6">
-                <div>
-                  <h3 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
-                    {developer.name}
-                  </h3>
-                  <p className="text-base xs:text-lg sm:text-xl text-pink-300 font-semibold mb-2 xs:mb-4">
-                    {developer.title}
-                  </p>
-                  <p className="text-indigo-100 leading-relaxed text-xs xs:text-sm sm:text-base">
-                    {developer.description}
-                  </p>
-                </div>
-
-                {/* Skills */}
-                <div>
-                  <h4 className="text-sm xs:text-base sm:text-lg font-semibold mb-2 xs:mb-3 text-pink-300">Technologies Used:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {developer.skills.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="px-2 xs:px-3 py-1 bg-white/20 rounded-full text-xs xs:text-sm font-medium backdrop-blur-sm border border-white/30"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Contact Links */}
-                <div>
-                  <h4 className="text-sm xs:text-base sm:text-lg font-semibold mb-2 xs:mb-3 text-pink-300">Connect With Me:</h4>
-                  <div className="flex flex-wrap gap-3 xs:gap-4">
-                    <a
-                      href={`mailto:${developer.contact.email}`}
-                      className="flex items-center space-x-1 xs:space-x-2 px-3 xs:px-4 py-1 xs:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-300 transform hover:scale-105 backdrop-blur-sm"
-                    >
-                      <img
-                        src="https://i.ibb.co/67yGztjJ/mail.png"
-                        alt="Email Icon"
-                        className="w-4 xs:w-5 h-4 xs:h-5"
-                      />
-                      <span className="text-xs xs:text-sm">Email</span>
-                    </a>
-                    <a
-                      href={developer.contact.behance}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center space-x-1 xs:space-x-2 px-3 xs:px-4 py-1 xs:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-300 transform hover:scale-105 backdrop-blur-sm"
-                    >
-                      <img
-                        src="https://i.ibb.co/nqNnvYng/behance-1.png"
-                        alt="Behance Icon"
-                        className="w-4 xs:w-5 h-4 xs:h-5"
-                      />
-                      <span className="text-xs xs:text-sm">Behance</span>
-                    </a>
-                    <a
-                      href={developer.contact.facebook}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center space-x-1 xs:space-x-2 px-3 xs:px-4 py-1 xs:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-300 transform hover:scale-105 backdrop-blur-sm"
-                    >
-                      <img
-                        src="https://i.ibb.co/9mxF4sKH/facebook.png"
-                        alt="Facebook Icon"
-                        className="w-4 xs:w-5 h-4 xs:h-5"
-                      />
-                      <span className="text-xs xs:text-sm">Facebook</span>
-                    </a>
-                    <a
-                      href={developer.contact.portfolio}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center space-x-1 xs:space-x-2 px-3 xs:px-4 py-1 xs:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-300 transform hover:scale-105 backdrop-blur-sm"
-                    >
-                      <img
-                        src="https://i.ibb.co/jZTjR61T/internet.png"
-                        alt="Portfolio Icon"
-                        className="w-4 xs:w-5 h-4 xs:h-5"
-                      />
-                      <span className="text-xs xs:text-sm">Portfolio</span>
-                    </a>
-                  </div>
+              {/* Speech Text */}
+              <div className="text-indigo-100 leading-relaxed text-base sm:text-lg md:text-xl whitespace-pre-line">
+                {speeches[language]}
+                <div className="mt-6">
+                  <button
+                    onClick={toggleLanguage}
+                    className="px-4 py-2 bg-pink-500 hover:bg-pink-600 rounded-lg text-white font-semibold transition-colors duration-300"
+                  >
+                    {language === "en" ? "বাংলায় দেখুন" : "View in English"}
+                  </button>
                 </div>
               </div>
-            </div>
-
-            {/* Quote */}
-            <div className="mt-8 xs:mt-10 sm:mt-12 text-center">
-              <blockquote className="text-sm xs:text-base sm:text-lg md:text-xl italic text-indigo-200 max-w-2xl mx-auto">
-                "Building digital experiences that make a difference, one line of code at a time."
-              </blockquote>
             </div>
           </div>
         </div>
