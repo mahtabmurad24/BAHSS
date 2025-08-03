@@ -16,7 +16,7 @@ export function Academics() {
     },
     {
       level: "Higher Secondary",
-      grades: "Class XI - XII",
+      grades: "Class XI - XII (Only Girls)",
       description: "Specialized streams preparing students for university admission.",
       subjects: ["Science", "Commerce", "Arts", "Business Studies"],
       color: "from-purple-400 to-pink-500"
@@ -45,9 +45,9 @@ export function Academics() {
       description: "Creative space for art, craft, and cultural activities"
     },
     {
-      icon: "⚽",
-      name: "Sports Complex",
-      description: "Indoor and outdoor sports facilities for physical development"
+      icon: "🍽️",
+      name: "Canteen",
+      description: "Hygienic and nutritious meal facilities for students and staff"
     },
     {
       icon: "🎭",
