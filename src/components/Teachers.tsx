@@ -11,7 +11,7 @@ export function Teachers() {
     limit: showAll ? 50 : 5
   });
 
-  const departments = ["Science", "Arts", "Commerce", "Mathematics", "English", "Bangla"];
+  const departments = ["Science", "Arts", "Commerce", "Mathematics", "English", "Bangla", "Religion", "ICT", "Physical Education"];
 
   if (!allTeachers) {
     return (
