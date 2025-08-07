@@ -42,11 +42,11 @@ export const initializeSuperAdmin = mutation({
       };
     }
 
-    if (args.adminCode === "sp@bahss") {
+    if (args.adminCode === "SUPER2025ADMIN") {
       if (!args.secretCode) {
         throw new Error("Secret code required for super admin initialization");
       }
-      if (args.secretCode !== "2025@bahss") {
+      if (args.secretCode !== "BAHSSC2025SECRET") {
         throw new Error("Invalid secret code");
       }
 

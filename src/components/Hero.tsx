@@ -58,7 +58,7 @@ export function Hero() {
               </span>
             </h1>
             <h2 className="text-2xl md:text-3xl font-semibold mb-4">
-              Higher Secondary School & College
+              Higher Secondary School (School & College)
             </h2>
             <p className="text-xl md:text-2xl mb-8 text-gray-200">
               {slides[currentSlide].subtitle}
