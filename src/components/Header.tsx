@@ -72,7 +72,7 @@ export function Header({ activeSection }: HeaderProps) {
                     isScrolled ? "text-gray-600" : "text-gray-200"
                   }`}
                 >
-                  Higher Secondary School & College
+                  Higher Secondary School
                 </p>
                 <p
                   className={`text-xs transition-colors duration-300 ${

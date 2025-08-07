@@ -5,7 +5,7 @@ import { useState } from "react";
 export function Gallery() {
   const [showAll, setShowAll] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<any | null>(null);
   
   const allGallery = useQuery(api.gallery.getPublicGallery, { 
     category: selectedCategory || undefined,
@@ -85,7 +85,7 @@ export function Gallery() {
               key={item._id}
               className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 animate-fadeInUp image-zoom cursor-pointer"
               style={{ animationDelay: `${index * 0.1}s` }}
-              onClick={() => setSelectedImage(item.imageUrl || null)}
+              onClick={() => setSelectedImage(item)}
             >
               <div className="aspect-square overflow-hidden">
                 <img
@@ -95,8 +95,8 @@ export function Gallery() {
                 />
               </div>
               
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              {/* Always visible caption */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
                 <div className="absolute bottom-0 left-0 right-0 p-4">
                   <h3 className="text-white font-semibold text-sm mb-1 line-clamp-2">
                     {item.title}
@@ -151,12 +151,30 @@ export function Gallery() {
             className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50 animate-fadeIn"
             onClick={() => setSelectedImage(null)}
           >
-            <div className="relative max-w-4xl max-h-full">
+            <div className="relative max-w-4xl max-h-full flex flex-col items-center">
               <img
-                src={selectedImage}
-                alt="Gallery Image"
-                className="max-w-full max-h-full object-contain rounded-lg"
+                src={selectedImage.imageUrl || "/api/placeholder/400/400"}
+                alt={selectedImage.title}
+                className="max-w-full max-h-[70vh] object-contain rounded-lg"
               />
+              <div className="mt-4 text-center max-w-2xl">
+                <h3 className="text-white font-bold text-xl mb-2">
+                  {selectedImage.title}
+                </h3>
+                {selectedImage.description && (
+                  <p className="text-white/80 text-sm mb-4">
+                    {selectedImage.description}
+                  </p>
+                )}
+                <div className="flex items-center justify-center gap-4 text-sm">
+                  <span className="inline-block px-3 py-1 bg-blue-600 text-white rounded-full font-medium">
+                    {categories.find(c => c.value === selectedImage.category)?.icon} {selectedImage.category}
+                  </span>
+                  <span className="text-white/60">
+                    Click outside to close
+                  </span>
+                </div>
+              </div>
               <button
                 onClick={() => setSelectedImage(null)}
                 className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors"
